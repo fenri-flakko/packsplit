@@ -1,11 +1,14 @@
 import { RouterProvider } from 'react-router-dom'
 import { WorkspaceProvider } from '@/hooks/useWorkspace'
+import { AppSettingsProvider } from '@/hooks/useAppSettings'
 import { router } from './router'
 
 export function AppProviders() {
   return (
     <WorkspaceProvider>
-      <RouterProvider router={router} />
+      <AppSettingsProvider>
+        <RouterProvider router={router} />
+      </AppSettingsProvider>
     </WorkspaceProvider>
   )
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { formatCurrency } from '@/lib/dates'
+import { useAppSettings } from '@/hooks/useAppSettings'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const MONTHS = [
@@ -9,6 +10,7 @@ const MONTHS = [
 ]
 
 export function MonthPage() {
+  const { person1Name, person2Name } = useAppSettings()
   const [month, setMonth] = useState(8)
   const [year, setYear] = useState(2026)
 
@@ -69,19 +71,15 @@ export function MonthPage() {
           </div>
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between">
-            <span className="font-medium text-text">Persona 1</span>
+            <span className="font-medium text-text">{person1Name}</span>
             <span className="font-semibold text-text">{formatCurrency(0)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-medium text-text">Persona 2</span>
+            <span className="font-medium text-text">{person2Name}</span>
             <span className="font-semibold text-text">{formatCurrency(0)}</span>
           </div>
         </div>
       </Card>
-
-      <p className="text-center text-xs text-text-muted">
-        Los datos se cargarán desde Supabase en la Fase 2
-      </p>
     </div>
   )
 }

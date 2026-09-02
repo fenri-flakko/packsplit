@@ -1,8 +1,17 @@
 # PackSplit
 
-Aplicación web mobile-first para gestionar el reparto diario de paquetes.
+Aplicación web mobile-first para calcular el reparto diario de paquetes. Se puede instalar en iPhone, iPad y Mac como app desde el navegador.
 
-## Desarrollo
+## Usar en Apple (iPhone / iPad)
+
+1. Abre en Safari: **https://fenri-flakko.github.io/packsplit/**
+2. Pulsa el botón **Compartir** (cuadrado con flecha hacia arriba)
+3. Elige **Añadir a pantalla de inicio**
+4. Confirma con **Añadir**
+
+La app quedará instalada como una aplicación independiente.
+
+## Desarrollo local
 
 ```bash
 npm install
@@ -12,29 +21,9 @@ npm run dev
 ## Tecnologías
 
 - React + TypeScript
-- Vite
+- Vite + PWA
 - Tailwind CSS
-- React Router
-- Supabase (Fase 2)
 
-## Fases
+## Publicación
 
-1. ✅ Proyecto base, diseño y navegación
-2. ✅ Supabase (base de datos + RPCs + conexión frontend)
-3. Ajustes completos
-4. Vista diaria con auto-save
-5. Vista semanal
-6. Historial y resumen mensual
-7. PWA y optimización
-
-## Supabase
-
-Proyecto: `vgtchvytqxxtusdfojkj` (eu-north-1)
-
-Variables en `.env`:
-```
-VITE_SUPABASE_URL=https://vgtchvytqxxtusdfojkj.supabase.co
-VITE_SUPABASE_ANON_KEY=<tu clave anon>
-```
-
-Las credenciales están en `.env` (no se sube a git).
+El despliegue a GitHub Pages se hace automáticamente al hacer push a `main`.

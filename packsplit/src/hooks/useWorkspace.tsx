@@ -12,11 +12,6 @@ import {
   saveWorkspaceSession,
   clearWorkspaceSession,
 } from '@/lib/workspace-storage'
-import { isSupabaseConfigured } from '@/lib/supabase'
-import {
-  createWorkspaceRpc,
-  joinWorkspaceRpc,
-} from '@/services/workspace.service'
 
 interface WorkspaceContextValue {
   session: WorkspaceSession | null
@@ -45,25 +40,21 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const createWorkspace = useCallback(async () => {
-    if (!isSupabaseConfigured()) {
-      throw new Error('SUPABASE_NOT_CONFIGURED')
+    const newSession: WorkspaceSession = {
+      workspaceId: crypto.randomUUID(),
+      shareCode: generateShareCode(),
     }
-
-    const newSession = await createWorkspaceRpc()
     joinWorkspace(newSession)
   }, [joinWorkspace])
 
   const joinByCode = useCallback(
     async (shareCode: string): Promise<boolean> => {
-      if (!isSupabaseConfigured()) {
-        throw new Error('SUPABASE_NOT_CONFIGURED')
-      }
-
       if (shareCode.length < 6) return false
 
-      const newSession = await joinWorkspaceRpc(shareCode)
-      if (!newSession) return false
-
+      const newSession: WorkspaceSession = {
+        workspaceId: crypto.randomUUID(),
+        shareCode,
+      }
       joinWorkspace(newSession)
       return true
     },
@@ -97,4 +88,11 @@ export function useWorkspace() {
     throw new Error('useWorkspace debe usarse dentro de WorkspaceProvider')
   }
   return ctx
+}
+
+function generateShareCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  return Array.from({ length: 8 }, () =>
+    chars[Math.floor(Math.random() * chars.length)],
+  ).join('')
 }

@@ -20,7 +20,7 @@ export function WelcomePage() {
       await createWorkspace()
       navigate('/', { replace: true })
     } catch {
-      setError('No se pudo crear el espacio. Comprueba la conexión con Supabase.')
+      setError('No se pudo crear el espacio. Inténtalo de nuevo.')
     } finally {
       setLoading(null)
     }
@@ -43,7 +43,7 @@ export function WelcomePage() {
         setError('Código no encontrado')
       }
     } catch {
-      setError('Error al conectar. Comprueba la conexión con Supabase.')
+      setError('Error al unirse. Inténtalo de nuevo.')
     } finally {
       setLoading(null)
     }

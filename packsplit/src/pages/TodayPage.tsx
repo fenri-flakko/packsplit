@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { addDays, subDays } from 'date-fns'
 import { Card } from '@/components/ui/Card'
 import { useCurrentDate } from '@/hooks/useCurrentDate'
+import { useAppSettings } from '@/hooks/useAppSettings'
 import {
   getDayName,
   formatFullDate,
@@ -14,9 +15,9 @@ export function TodayPage() {
   const today = useCurrentDate()
   const [selectedDate, setSelectedDate] = useState(today)
   const [packages, setPackages] = useState(0)
+  const { person1Name, person2Name, pricePerPackage } = useAppSettings()
 
   const isSelectedToday = isToday(selectedDate)
-  const pricePerPackage = 1.2
   const totalGenerated = packages * pricePerPackage
   const sharePerPerson = totalGenerated / 2
 
@@ -110,14 +111,14 @@ export function TodayPage() {
       <Card>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="font-medium text-text">Persona 1</span>
+            <span className="font-medium text-text">{person1Name}</span>
             <span className="font-semibold text-text">
               {formatCurrency(sharePerPerson)}
             </span>
           </div>
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between">
-            <span className="font-medium text-text">Persona 2</span>
+            <span className="font-medium text-text">{person2Name}</span>
             <span className="font-semibold text-text">
               {formatCurrency(sharePerPerson)}
             </span>

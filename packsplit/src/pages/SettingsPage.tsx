@@ -1,14 +1,25 @@
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
 import { useWorkspace } from '@/hooks/useWorkspace'
+import { useAppSettings } from '@/hooks/useAppSettings'
+import {
+  formatPriceForInput,
+  parsePriceInput,
+} from '@/lib/app-settings-storage'
 import { useNavigate } from 'react-router-dom'
 import { Copy, Link, RefreshCw, LogOut } from 'lucide-react'
 import { useState } from 'react'
 
 export function SettingsPage() {
   const { session, leaveWorkspace } = useWorkspace()
+  const { person1Name, person2Name, pricePerPackage, updateSettings } =
+    useAppSettings()
   const navigate = useNavigate()
   const [copied, setCopied] = useState<'code' | 'link' | null>(null)
+  const [priceInput, setPriceInput] = useState(() =>
+    formatPriceForInput(pricePerPackage),
+  )
 
   const shareCode = session?.shareCode ?? '—'
   const shareLink = `${window.location.origin}/join/${shareCode}`
@@ -22,6 +33,17 @@ export function SettingsPage() {
   const handleLeave = () => {
     leaveWorkspace()
     navigate('/bienvenida', { replace: true })
+  }
+
+  const handlePriceChange = (value: string) => {
+    if (!/^[0-9]*[.,]?[0-9]*$/.test(value) && value !== '') return
+    setPriceInput(value)
+  }
+
+  const handlePriceBlur = () => {
+    const parsed = parsePriceInput(priceInput)
+    updateSettings({ pricePerPackage: parsed })
+    setPriceInput(formatPriceForInput(parsed))
   }
 
   return (
@@ -57,7 +79,7 @@ export function SettingsPage() {
         </div>
         <Button variant="ghost" className="mt-2 w-full text-xs" disabled>
           <RefreshCw className="h-3.5 w-3.5" />
-          Regenerar código (Fase 2)
+          Regenerar código
         </Button>
       </Card>
 
@@ -69,9 +91,11 @@ export function SettingsPage() {
         <div className="flex items-center gap-2">
           <input
             type="text"
-            defaultValue="1,20"
-            disabled
-            className="flex-1 rounded-[var(--radius-button)] border border-border bg-bg px-4 py-3 text-text opacity-60"
+            inputMode="decimal"
+            value={priceInput}
+            onChange={(e) => handlePriceChange(e.target.value)}
+            onBlur={handlePriceBlur}
+            className="flex-1 rounded-[var(--radius-button)] border border-border bg-bg px-4 py-3 text-text"
           />
           <span className="text-text-muted">€</span>
         </div>
@@ -82,10 +106,18 @@ export function SettingsPage() {
         <h3 className="mb-3 text-sm font-semibold text-text-muted uppercase tracking-wide">
           Personas y reparto
         </h3>
-        <div className="space-y-2 text-sm text-text-muted">
-          <p>Persona 1 — 50%</p>
-          <p>Persona 2 — 50%</p>
-          <p className="text-xs pt-2">Configuración completa en Fase 3</p>
+        <div className="space-y-3">
+          <Input
+            label="Persona 1"
+            value={person1Name}
+            onChange={(e) => updateSettings({ person1Name: e.target.value })}
+          />
+          <Input
+            label="Persona 2"
+            value={person2Name}
+            onChange={(e) => updateSettings({ person2Name: e.target.value })}
+          />
+          <p className="text-xs text-text-muted">Reparto equitativo — 50% / 50%</p>
         </div>
       </Card>
 
@@ -97,7 +129,6 @@ export function SettingsPage() {
         <div className="space-y-2 text-sm text-text-muted">
           <p>Lun – Sáb: Activos</p>
           <p>Domingo: Desactivado</p>
-          <p className="text-xs pt-2">Configuración completa en Fase 3</p>
         </div>
       </Card>
 

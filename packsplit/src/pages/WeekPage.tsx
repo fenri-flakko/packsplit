@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/Card'
 import { useCurrentDate } from '@/hooks/useCurrentDate'
+import { useAppSettings } from '@/hooks/useAppSettings'
 import {
   getWeekStart,
   getWeekEnd,
@@ -13,12 +14,13 @@ const MOCK_PACKAGES = [50, 60, 40, 50, 70, 60, 0]
 
 export function WeekPage() {
   const today = useCurrentDate()
+  const { person1Name, person2Name, pricePerPackage } = useAppSettings()
   const weekStart = getWeekStart(today)
   const weekEnd = getWeekEnd(today)
 
   const activeDays = DAY_NAMES.slice(0, 6)
   const totalPackages = MOCK_PACKAGES.slice(0, 6).reduce((a, b) => a + b, 0)
-  const totalGenerated = totalPackages * 1.2
+  const totalGenerated = totalPackages * pricePerPackage
 
   return (
     <div className="space-y-5">
@@ -42,7 +44,7 @@ export function WeekPage() {
                 {MOCK_PACKAGES[i]} pkg
               </span>
               <span className="ml-2 text-sm text-text-muted">
-                {formatCurrency(MOCK_PACKAGES[i] * 1.2)}
+                {formatCurrency(MOCK_PACKAGES[i] * pricePerPackage)}
               </span>
             </div>
           </Card>
@@ -66,13 +68,13 @@ export function WeekPage() {
           </div>
           <div className="h-px bg-accent/20" />
           <div className="flex items-center justify-between">
-            <span className="font-medium text-text">Persona 1</span>
+            <span className="font-medium text-text">{person1Name}</span>
             <span className="font-semibold text-text">
               {formatCurrency(totalGenerated / 2)}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-medium text-text">Persona 2</span>
+            <span className="font-medium text-text">{person2Name}</span>
             <span className="font-semibold text-text">
               {formatCurrency(totalGenerated / 2)}
             </span>

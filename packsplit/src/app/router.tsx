@@ -9,7 +9,8 @@ import { HistoryPage } from '@/pages/HistoryPage'
 import { MonthPage } from '@/pages/MonthPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+  [
   {
     path: '/join/:code',
     element: <JoinPage />,
@@ -48,4 +49,6 @@ export const router = createBrowserRouter([
     path: '*',
     element: <Navigate to="/" replace />,
   },
-])
+  ],
+  { basename: import.meta.env.BASE_URL },
+)
