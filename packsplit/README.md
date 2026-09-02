@@ -4,7 +4,7 @@ Aplicación web mobile-first para calcular el reparto diario de paquetes. Se pue
 
 ## Usar en Apple (iPhone / iPad)
 
-1. Abre en Safari: **https://fenri-flakko.github.io/packsplit/**
+1. Abre en Safari esta URL exacta: **https://fenri-flakko.github.io/packsplit/**
 2. Pulsa el botón **Compartir** (cuadrado con flecha hacia arriba)
 3. Elige **Añadir a pantalla de inicio**
 4. Confirma con **Añadir**
