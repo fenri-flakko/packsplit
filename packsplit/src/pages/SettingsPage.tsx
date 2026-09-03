@@ -8,8 +8,9 @@ import {
   parsePriceInput,
 } from '@/lib/app-settings-storage'
 import { useNavigate } from 'react-router-dom'
-import { Copy, Link, RefreshCw, LogOut } from 'lucide-react'
+import { Copy, Link, RefreshCw, LogOut, Save } from 'lucide-react'
 import { useState } from 'react'
+import { saveSavedSpace } from '@/lib/saved-spaces'
 
 export function SettingsPage() {
   const { session, leaveWorkspace } = useWorkspace()
@@ -17,6 +18,8 @@ export function SettingsPage() {
     useAppSettings()
   const navigate = useNavigate()
   const [copied, setCopied] = useState<'code' | 'link' | null>(null)
+  const [spaceName, setSpaceName] = useState(shareCodeLabel(session?.shareCode))
+  const [spaceSaved, setSpaceSaved] = useState(false)
   const [priceInput, setPriceInput] = useState(() =>
     formatPriceForInput(pricePerPackage),
   )
@@ -33,6 +36,17 @@ export function SettingsPage() {
   const handleLeave = () => {
     leaveWorkspace()
     navigate('/bienvenida', { replace: true })
+  }
+
+  const handleSaveSpace = () => {
+    if (!session) return
+    saveSavedSpace({
+      workspaceId: session.workspaceId,
+      shareCode: session.shareCode,
+      name: spaceName.trim() || `Espacio ${session.shareCode}`,
+    })
+    setSpaceSaved(true)
+    setTimeout(() => setSpaceSaved(false), 2000)
   }
 
   const handlePriceChange = (value: string) => {
@@ -77,10 +91,25 @@ export function SettingsPage() {
             {copied === 'link' ? '¡Copiado!' : 'Copiar enlace'}
           </Button>
         </div>
+        <div className="mt-3">
+        <Input
+          label="Nombre del espacio"
+          value={spaceName}
+          onChange={(e) => setSpaceName(e.target.value)}
+        />
+        <Button
+          variant="secondary"
+          className="mt-2 w-full text-xs"
+          onClick={handleSaveSpace}
+        >
+          <Save className="h-3.5 w-3.5" />
+          {spaceSaved ? 'Espacio guardado' : 'Guardar este espacio'}
+        </Button>
         <Button variant="ghost" className="mt-2 w-full text-xs" disabled>
           <RefreshCw className="h-3.5 w-3.5" />
           Regenerar código
         </Button>
+        </div>
       </Card>
 
       {/* Precio por paquete */}
@@ -139,4 +168,8 @@ export function SettingsPage() {
       </Button>
     </div>
   )
+}
+
+function shareCodeLabel(code?: string) {
+  return code ? `Espacio ${code}` : 'Mi espacio'
 }

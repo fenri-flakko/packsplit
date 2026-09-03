@@ -1,17 +1,20 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Package, Users } from 'lucide-react'
+import { Package, Users, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Card } from '@/components/ui/Card'
 import { useWorkspace } from '@/hooks/useWorkspace'
 import { normalizeShareCode } from '@/lib/workspace-storage'
+import { getSavedSpaces, removeSavedSpace } from '@/lib/saved-spaces'
 
 export function WelcomePage() {
   const navigate = useNavigate()
-  const { createWorkspace, joinByCode } = useWorkspace()
+  const { createWorkspace, joinByCode, joinWorkspace } = useWorkspace()
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState<'create' | 'join' | null>(null)
+  const [loading, setLoading] = useState<'create' | 'join' | string | null>(null)
+  const [savedSpaces, setSavedSpaces] = useState(getSavedSpaces)
 
   const handleCreate = async () => {
     setLoading('create')
@@ -49,8 +52,33 @@ export function WelcomePage() {
     }
   }
 
+  const handleEnterSaved = async (shareCode: string) => {
+    const space = savedSpaces.find((item) => item.shareCode === shareCode)
+    if (!space) return
+
+    setLoading(shareCode)
+    setError('')
+    try {
+      const success = await joinByCode(space.shareCode)
+      if (!success) {
+        joinWorkspace(space)
+      }
+      navigate('/', { replace: true })
+    } catch {
+      joinWorkspace(space)
+      navigate('/', { replace: true })
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  const handleRemoveSaved = (shareCode: string) => {
+    removeSavedSpace(shareCode)
+    setSavedSpaces(getSavedSpaces())
+  }
+
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-bg px-6">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-bg px-6 py-10">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-3">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent shadow-lg shadow-accent/25">
@@ -63,6 +91,39 @@ export function WelcomePage() {
             Gestiona tu reparto diario de paquetes de forma sencilla
           </p>
         </div>
+
+        {savedSpaces.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+              Espacios guardados
+            </p>
+            {savedSpaces.map((space) => (
+              <Card
+                key={space.shareCode}
+                padding="sm"
+                className="flex items-center gap-2"
+              >
+                <button
+                  className="min-w-0 flex-1 text-left"
+                  onClick={() => handleEnterSaved(space.shareCode)}
+                  disabled={loading !== null}
+                >
+                  <p className="truncate font-medium text-text">{space.name}</p>
+                  <p className="font-mono text-xs tracking-widest text-text-muted">
+                    {space.shareCode}
+                  </p>
+                </button>
+                <button
+                  onClick={() => handleRemoveSaved(space.shareCode)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted hover:bg-bg hover:text-danger"
+                  aria-label="Quitar espacio guardado"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </Card>
+            ))}
+          </div>
+        )}
 
         <div className="space-y-3">
           <Button

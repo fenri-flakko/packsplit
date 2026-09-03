@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
-import { WorkspaceGuard, GuestGuard } from '@/components/layout/WorkspaceGuard'
+import { WorkspaceGuard } from '@/components/layout/WorkspaceGuard'
 import { WelcomePage } from '@/pages/WelcomePage'
 import { JoinPage } from '@/pages/JoinPage'
 import { TodayPage } from '@/pages/TodayPage'
@@ -16,19 +16,14 @@ export const router = createBrowserRouter(
     element: <JoinPage />,
   },
   {
-    element: <GuestGuard />,
-    children: [
-      {
-        path: '/bienvenida',
-        element: <WelcomePage />,
-      },
-    ],
+    path: '/bienvenida',
+    element: <WelcomePage />,
   },
   {
     element: <WorkspaceGuard />,
     children: [
       {
-        element: <AppShell />,
+        element: <AppShell showHome />,
         children: [
           { index: true, element: <TodayPage /> },
           { path: 'semana', element: <WeekPage /> },
@@ -38,7 +33,7 @@ export const router = createBrowserRouter(
       },
       {
         path: '/ajustes',
-        element: <AppShell showNav={false} title="Ajustes" />,
+        element: <AppShell showNav={false} showSettings={false} showBack title="Ajustes" />,
         children: [
           { index: true, element: <SettingsPage /> },
         ],
@@ -47,7 +42,7 @@ export const router = createBrowserRouter(
   },
   {
     path: '*',
-    element: <Navigate to="/" replace />,
+    element: <Navigate to="/bienvenida" replace />,
   },
   ],
   { basename: import.meta.env.BASE_URL },

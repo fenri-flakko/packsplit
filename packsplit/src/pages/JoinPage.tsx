@@ -6,14 +6,9 @@ import { normalizeShareCode } from '@/lib/workspace-storage'
 export function JoinPage() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
-  const { joinByCode, session } = useWorkspace()
+  const { joinByCode } = useWorkspace()
 
   useEffect(() => {
-    if (session) {
-      navigate('/', { replace: true })
-      return
-    }
-
     if (!code) {
       navigate('/bienvenida', { replace: true })
       return
@@ -23,7 +18,7 @@ export function JoinPage() {
     joinByCode(normalized).then((success) => {
       navigate(success ? '/' : '/bienvenida', { replace: true })
     })
-  }, [code, joinByCode, navigate, session])
+  }, [code, joinByCode, navigate])
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-bg">

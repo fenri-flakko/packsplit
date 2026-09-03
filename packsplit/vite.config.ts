@@ -20,7 +20,7 @@ export default defineConfig({
         background_color: '#F8F9FB',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/packsplit/',
+        start_url: '/packsplit/bienvenida',
         scope: '/packsplit/',
         lang: 'es',
         icons: [

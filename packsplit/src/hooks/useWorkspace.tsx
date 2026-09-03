@@ -12,6 +12,10 @@ import {
   saveWorkspaceSession,
   clearWorkspaceSession,
 } from '@/lib/workspace-storage'
+import {
+  createWorkspaceRpc,
+  joinWorkspaceRpc,
+} from '@/services/workspace.service'
 
 interface WorkspaceContextValue {
   session: WorkspaceSession | null
@@ -40,10 +44,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const createWorkspace = useCallback(async () => {
-    const newSession: WorkspaceSession = {
-      workspaceId: crypto.randomUUID(),
-      shareCode: generateShareCode(),
-    }
+    const newSession = await createWorkspaceRpc()
     joinWorkspace(newSession)
   }, [joinWorkspace])
 
@@ -51,10 +52,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     async (shareCode: string): Promise<boolean> => {
       if (shareCode.length < 6) return false
 
-      const newSession: WorkspaceSession = {
-        workspaceId: crypto.randomUUID(),
-        shareCode,
-      }
+      const newSession = await joinWorkspaceRpc(shareCode)
+      if (!newSession) return false
+
       joinWorkspace(newSession)
       return true
     },
@@ -88,11 +88,4 @@ export function useWorkspace() {
     throw new Error('useWorkspace debe usarse dentro de WorkspaceProvider')
   }
   return ctx
-}
-
-function generateShareCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  return Array.from({ length: 8 }, () =>
-    chars[Math.floor(Math.random() * chars.length)],
-  ).join('')
 }

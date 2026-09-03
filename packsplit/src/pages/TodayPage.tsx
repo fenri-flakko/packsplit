@@ -1,25 +1,66 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
-import { addDays, subDays } from 'date-fns'
+import { addDays, format, subDays } from 'date-fns'
 import { Card } from '@/components/ui/Card'
 import { useCurrentDate } from '@/hooks/useCurrentDate'
 import { useAppSettings } from '@/hooks/useAppSettings'
+import { useWorkspace } from '@/hooks/useWorkspace'
 import {
   getDayName,
   formatFullDate,
   isToday,
   formatCurrency,
 } from '@/lib/dates'
+import {
+  getDailyRecordRpc,
+  upsertDailyRecordRpc,
+} from '@/services/workspace.service'
 
 export function TodayPage() {
   const today = useCurrentDate()
   const [selectedDate, setSelectedDate] = useState(today)
   const [packages, setPackages] = useState(0)
+  const [loaded, setLoaded] = useState(false)
   const { person1Name, person2Name, pricePerPackage } = useAppSettings()
+  const { session } = useWorkspace()
 
   const isSelectedToday = isToday(selectedDate)
   const totalGenerated = packages * pricePerPackage
   const sharePerPerson = totalGenerated / 2
+  const dateKey = format(selectedDate, 'yyyy-MM-dd')
+  const shareCode = session?.shareCode
+
+  useEffect(() => {
+    if (!shareCode) return
+
+    let cancelled = false
+    setLoaded(false)
+
+    getDailyRecordRpc(shareCode, dateKey)
+      .then((count) => {
+        if (!cancelled) setPackages(count)
+      })
+      .catch(() => {
+        if (!cancelled) setPackages(0)
+      })
+      .finally(() => {
+        if (!cancelled) setLoaded(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [shareCode, dateKey])
+
+  useEffect(() => {
+    if (!loaded || !shareCode) return
+
+    const timeout = setTimeout(() => {
+      upsertDailyRecordRpc(shareCode, dateKey, packages).catch(() => undefined)
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [packages, loaded, shareCode, dateKey])
 
   const goToPrevious = () => setSelectedDate((d) => subDays(d, 1))
   const goToNext = () => setSelectedDate((d) => addDays(d, 1))
