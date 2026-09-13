@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { formatCurrency } from '@/lib/dates'
 import { useAppSettings } from '@/hooks/useAppSettings'
+import { useWorkspace } from '@/hooks/useWorkspace'
+import { getMonthRecordsRpc } from '@/services/workspace.service'
+import { sumRecords } from '@/lib/calculations'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const MONTHS = [
@@ -10,9 +13,17 @@ const MONTHS = [
 ]
 
 export function MonthPage() {
-  const { person1Name, person2Name } = useAppSettings()
+  const { person1Name, person2Name, pricePerPackage } = useAppSettings()
+  const { session } = useWorkspace()
   const [month, setMonth] = useState(8)
   const [year, setYear] = useState(2026)
+  const [summary, setSummary] = useState({
+    packages: 0,
+    total: 0,
+    person1: 0,
+    person2: 0,
+  })
+  const [loading, setLoading] = useState(true)
 
   const prevMonth = () => {
     if (month === 0) {
@@ -31,6 +42,31 @@ export function MonthPage() {
       setMonth((m) => m + 1)
     }
   }
+
+  useEffect(() => {
+    const shareCode = session?.shareCode
+    if (!shareCode) return
+
+    let cancelled = false
+    setLoading(true)
+
+    getMonthRecordsRpc(shareCode, year, month + 1)
+      .then((records) => {
+        if (!cancelled) setSummary(sumRecords(records, pricePerPackage))
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSummary({ packages: 0, total: 0, person1: 0, person2: 0 })
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [session?.shareCode, year, month, pricePerPackage])
 
   return (
     <div className="space-y-5">
@@ -60,25 +96,35 @@ export function MonthPage() {
         <h3 className="mb-4 text-sm font-semibold text-text-muted uppercase tracking-wide">
           Resumen mensual
         </h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-text-muted">📦 Total paquetes</span>
-            <span className="font-bold text-text">—</span>
+        {loading ? (
+          <p className="text-sm text-text-muted">Cargando…</p>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-muted">📦 Total paquetes</span>
+              <span className="font-bold text-text">{summary.packages}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-muted">💰 Total generado</span>
+              <span className="text-lg font-bold text-text">
+                {formatCurrency(summary.total)}
+              </span>
+            </div>
+            <div className="h-px bg-border" />
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-text">{person1Name}</span>
+              <span className="font-semibold text-text">
+                {formatCurrency(summary.person1)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-text">{person2Name}</span>
+              <span className="font-semibold text-text">
+                {formatCurrency(summary.person2)}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-text-muted">💰 Total generado</span>
-            <span className="text-lg font-bold text-text">{formatCurrency(0)}</span>
-          </div>
-          <div className="h-px bg-border" />
-          <div className="flex items-center justify-between">
-            <span className="font-medium text-text">{person1Name}</span>
-            <span className="font-semibold text-text">{formatCurrency(0)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="font-medium text-text">{person2Name}</span>
-            <span className="font-semibold text-text">{formatCurrency(0)}</span>
-          </div>
-        </div>
+        )}
       </Card>
     </div>
   )

@@ -8,18 +8,25 @@ import {
   parsePriceInput,
 } from '@/lib/app-settings-storage'
 import { useNavigate } from 'react-router-dom'
-import { Copy, Link, RefreshCw, LogOut, Save } from 'lucide-react'
+import { Copy, Link, RefreshCw, LogOut, Save, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { saveSavedSpace } from '@/lib/saved-spaces'
+import { DAY_NAMES } from '@/types'
 
 export function SettingsPage() {
   const { session, leaveWorkspace } = useWorkspace()
-  const { person1Name, person2Name, pricePerPackage, updateSettings } =
-    useAppSettings()
+  const {
+    person1Name,
+    person2Name,
+    pricePerPackage,
+    workDays,
+    updateSettings,
+  } = useAppSettings()
   const navigate = useNavigate()
   const [copied, setCopied] = useState<'code' | 'link' | null>(null)
   const [spaceName, setSpaceName] = useState(shareCodeLabel(session?.shareCode))
   const [spaceSaved, setSpaceSaved] = useState(false)
+  const [workDaysOpen, setWorkDaysOpen] = useState(false)
   const [priceInput, setPriceInput] = useState(() =>
     formatPriceForInput(pricePerPackage),
   )
@@ -146,19 +153,60 @@ export function SettingsPage() {
             value={person2Name}
             onChange={(e) => updateSettings({ person2Name: e.target.value })}
           />
-          <p className="text-xs text-text-muted">Reparto equitativo — 50% / 50%</p>
+          <p className="text-xs text-text-muted">
+            El reparto del día es 50/50 si van las dos personas. Si solo va una, recibe el 100%.
+          </p>
         </div>
       </Card>
 
       {/* Días de trabajo */}
       <Card>
-        <h3 className="mb-3 text-sm font-semibold text-text-muted uppercase tracking-wide">
-          Días de trabajo
-        </h3>
-        <div className="space-y-2 text-sm text-text-muted">
-          <p>Lun – Sáb: Activos</p>
-          <p>Domingo: Desactivado</p>
-        </div>
+        <button
+          type="button"
+          className="mb-1 flex w-full items-center justify-between"
+          onClick={() => setWorkDaysOpen((open) => !open)}
+        >
+          <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+            Días de trabajo
+          </h3>
+          <ChevronDown
+            className={`h-4 w-4 text-text-muted transition-transform ${workDaysOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+        <p className="mb-3 text-xs text-text-muted">
+          {DAY_NAMES.filter((_, i) => workDays[i + 1]).join(', ') || 'Ninguno'}
+        </p>
+        {workDaysOpen && (
+          <div className="space-y-2">
+            {DAY_NAMES.map((name, index) => {
+              const day = index + 1
+              const active = workDays[day]
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() =>
+                    updateSettings({
+                      workDays: { ...workDays, [day]: !active },
+                    })
+                  }
+                  className="flex w-full items-center justify-between rounded-[var(--radius-button)] border border-border px-3 py-2.5 text-sm"
+                >
+                  <span className="font-medium text-text">{name}</span>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      active
+                        ? 'bg-success/15 text-success'
+                        : 'bg-border/60 text-text-muted'
+                    }`}
+                  >
+                    {active ? 'Activo' : 'Desactivado'}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </Card>
 
       {/* Salir del espacio */}
